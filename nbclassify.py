@@ -5,9 +5,13 @@ import random
 from sklearn.feature_extraction.text import CountVectorizer
 from nltk.stem.porter import PorterStemmer
 #nltk.download('punkt')
+from Tkinter import *
 from sklearn.cross_validation import train_test_split
 from sklearn.naive_bayes import GaussianNB
 from sklearn.metrics import classification_report
+from prettytable import PrettyTable
+from tabulate import tabulate
+from sklearn.metrics import accuracy_score
 
 stemmer = PorterStemmer()
 def stem_tokens(tokens, stemmer):
@@ -24,7 +28,7 @@ def tokenize(text):
     # stem
     stems = stem_tokens(tokens, stemmer)
     return stems
-########
+
 
 vectorizer = CountVectorizer(
     analyzer = 'word',
@@ -34,9 +38,9 @@ vectorizer = CountVectorizer(
     max_features = 85
 )
 train_data_f = "training.txt"
-test_data_f = "reviews1.csv"
+test_data_f = "testdata.csv"
 
-train_d = pd.read_csv(train_data_f, header=None ,delimiter="\t", quoting=3)
+train_d = pd.read_csv(train_data_f, header=None,delimiter="\t", quoting=3)
 train_d.columns = ["Sentiment","Text"]
 
 test_d = pd.read_csv(test_data_f, header=None, delimiter="\n", quoting=1)
@@ -52,7 +56,7 @@ print train_d.shape
 corp_data_features = vectorizer.fit_transform(train_d.Text.tolist() + test_d.Text.tolist())
 
 corp_data_features_nd = corp_data_features.toarray()
-print corp_data_features_nd.shape
+#print corp_data_features_nd.shape
 vocab = vectorizer.get_feature_names()
 
 dist = np.sum(corp_data_features_nd, axis=0)
@@ -80,6 +84,18 @@ nb = nb.fit(X=corp_data_features_nd[0:len(train_d)],y=train_d.Sentiment)
 test_pred = nb.predict(corp_data_features_nd[len(train_d):])
 
 sample = random.sample(xrange(len(test_pred)),10)
+#print test_pred
+count=0
 
 for text,sentiment in zip(test_d.Text[sample],test_pred[sample]):
     print sentiment,text
+
+root = Tk()
+for i in range(1,10):
+    if(test_pred[i]==1):
+        count = count+1
+
+if(count>5):
+    label = Label(root, text= "The Product has got many Positive reviews. Hence the General Sentiment is positive")
+    label.pack()
+    root.mainloop()
