@@ -38,7 +38,9 @@ vectorizer = CountVectorizer(
     max_features = 85
 )
 train_data_f = "training.txt"
-test_data_f = "testdata.csv"
+test_data_f = "testdata2.csv"
+
+
 
 train_d = pd.read_csv(train_data_f, header=None,delimiter="\t", quoting=3)
 train_d.columns = ["Sentiment","Text"]
@@ -99,3 +101,8 @@ if(count>5):
     label = Label(root, text= "The Product has got many Positive reviews. Hence the General Sentiment is positive")
     label.pack()
     root.mainloop()
+else:
+    label = Label(root, text="The Product has got many Negative reviews. Hence the General Sentiment is Negative")
+    label.pack()
+    root.mainloop()
+
