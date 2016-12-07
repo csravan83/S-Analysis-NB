@@ -29,80 +29,69 @@ def tokenize(text):
     stems = stem_tokens(tokens, stemmer)
     return stems
 
+def init(filename):
+    vectorizer = CountVectorizer(
+        analyzer='word',
+        tokenizer=tokenize,
+        lowercase=True,
+        stop_words='english',
+        max_features=85
+    )
+    train_data_f = "training.txt"
+    test_data_f = filename
 
-vectorizer = CountVectorizer(
-    analyzer = 'word',
-    tokenizer = tokenize,
-    lowercase = True,
-    stop_words = 'english',
-    max_features = 85
-)
-train_data_f = "training.txt"
-test_data_f = "testdata2.csv"
+    train_d = pd.read_csv(train_data_f, header=None, delimiter="\t", quoting=3)
+    train_d.columns = ["Sentiment", "Text"]
 
+    test_d = pd.read_csv(test_data_f, header=None, delimiter="\n", quoting=1)
+    test_d.columns = ["Text"]
 
+    # print test_d.head()
+    # print train_d.Sentiment.value_counts()
 
-train_d = pd.read_csv(train_data_f, header=None,delimiter="\t", quoting=3)
-train_d.columns = ["Sentiment","Text"]
+    print train_d.shape
 
-test_d = pd.read_csv(test_data_f, header=None, delimiter="\n", quoting=1)
-test_d.columns = ["Text"]
+    # np.mean([len(s.split(" ")) for s in train_d.Text])
 
-#print test_d.head()
-#print train_d.Sentiment.value_counts()
+    corp_data_features = vectorizer.fit_transform(train_d.Text.tolist() + test_d.Text.tolist())
 
-print train_d.shape
+    corp_data_features_nd = corp_data_features.toarray()
+    # print corp_data_features_nd.shape
+    vocab = vectorizer.get_feature_names()
 
-#np.mean([len(s.split(" ")) for s in train_d.Text])
+    dist = np.sum(corp_data_features_nd, axis=0)
 
-corp_data_features = vectorizer.fit_transform(train_d.Text.tolist() + test_d.Text.tolist())
+    # For each, print the vocabulary word and the number of times it
+    # appears in the data set
+    # for tag,count in zip(vocab,dist):
+    #   print count, tag
 
-corp_data_features_nd = corp_data_features.toarray()
-#print corp_data_features_nd.shape
-vocab = vectorizer.get_feature_names()
+    X_train, X_test, y_train, y_test = train_test_split(
+        corp_data_features_nd[0:len(train_d)],
+        train_d.Sentiment,
+        train_size=0.85,
+        random_state=1234)
 
-dist = np.sum(corp_data_features_nd, axis=0)
+    # nb = GaussianNB()
+    # nb = nb.fit(X=X_train,y=y_train)
 
-# For each, print the vocabulary word and the number of times it
-# appears in the data set
-#for tag,count in zip(vocab,dist):
- #   print count, tag
+    # y_pred = nb.predict(X_test)
+    # print(classification_report(y_test,y_pred))
 
-X_train, X_test, y_train,y_test = train_test_split(
-    corp_data_features_nd[0:len(train_d)],
-    train_d.Sentiment,
-    train_size=0.85,
-    random_state=1234)
+    nb = GaussianNB()
+    nb = nb.fit(X=corp_data_features_nd[0:len(train_d)], y=train_d.Sentiment)
 
-#nb = GaussianNB()
-#nb = nb.fit(X=X_train,y=y_train)
+    test_pred = nb.predict(corp_data_features_nd[len(train_d):])
 
-#y_pred = nb.predict(X_test)
-#print(classification_report(y_test,y_pred))
+    sample = random.sample(xrange(len(test_pred)), 10)
+    # print test_pred
+    count = 0
 
-nb = GaussianNB()
-nb = nb.fit(X=corp_data_features_nd[0:len(train_d)],y=train_d.Sentiment)
+    for text, sentiment in zip(test_d.Text[sample], test_pred[sample]):
+        print sentiment, text
+    for i in range(1, 10):
+        if (test_pred[i] == 1):
+            count = count + 1
 
-test_pred = nb.predict(corp_data_features_nd[len(train_d):])
-
-sample = random.sample(xrange(len(test_pred)),10)
-#print test_pred
-count=0
-
-for text,sentiment in zip(test_d.Text[sample],test_pred[sample]):
-    print sentiment,text
-
-root = Tk()
-for i in range(1,10):
-    if(test_pred[i]==1):
-        count = count+1
-
-if(count>5):
-    label = Label(root, text= "The Product has got many Positive reviews. Hence the General Sentiment is positive")
-    label.pack()
-    root.mainloop()
-else:
-    label = Label(root, text="The Product has got many Negative reviews. Hence the General Sentiment is Negative")
-    label.pack()
-    root.mainloop()
-
+    if count > 5:
+        return True
