@@ -2,25 +2,34 @@ from Tkinter import *
 import ttk
 import nbclassify
 root = Tk()
+
 def on_select(*args):
     selected =  productvar.get()
     val = False
-    if selected == 'iPhone6s':
+    if selected == 'iPhone5s':
         val = nbclassify.init('testdata.csv')
     else:
         val = nbclassify.init('testdata2.csv')
     if val:
-        label = Label(root, text="The Product has got many Positive reviews. Hence the General Sentiment is positive")
-        label.pack()
+        labelvar.set("The Product has got many Positive reviews. Hence the General Sentiment is positive")
     else:
-        label = Label(root, text="The Product has got many Negative reviews. Hence the General Sentiment is positive")
-        label.pack()
+        labelvar.set("The Product has got many Negative reviews. Hence the General Sentiment is negative")
+
 
 root.wm_title("Product Reviews")
-
 productvar = StringVar()
+labelvar = StringVar()
+header = Label(root, text="Welcome to Sentiment Analysis")
+header.config(font=("Courier", 26), pady=30)
+header.pack()
 products = ttk.Combobox(root, textvariable=productvar)
-products['values'] = ['iPhone6s', 'Micromax Canvas']
+products['values'] = ['iPhone5s', 'Micromax Canvas Spark3']
 products.pack()
+labelvar.set("Select a product to show sentiment.")
+label = Label(root, textvar=labelvar)
+label.config(font=("Arial",12),pady=20)
+label.pack()
 products.bind('<<ComboboxSelected>>', on_select)
+root.minsize(width=666, height=300)
+root.maxsize(width=666, height=300)
 root.mainloop()
