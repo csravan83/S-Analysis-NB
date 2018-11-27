@@ -1,15 +1,16 @@
-from Tkinter import *
-import ttk
-import nbclassify
+from tkinter import *
+from tkinter import ttk
+
+import sentim
 root = Tk()
 
 def on_select(*args):
     selected =  productvar.get()
     val = False
     if selected == 'iPhone5s':
-        val = nbclassify.init('testdata.csv')
+        val = sentim.init('testdata.csv')
     else:
-        val = nbclassify.init('testdata2.csv')
+        val = sentim.init('testdata2.csv')
     if val:
         labelvar.set("The Product has got many Positive reviews. Hence the General Sentiment is positive")
     else:
